@@ -1,9 +1,12 @@
 import java.util.List;
+import java.util.Optional;
+
 import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -14,23 +17,17 @@ public class LogonDialog {
 	Dialog<ButtonType> dialog;
 	List<Environment> envs;
 	ChoiceBox<Environment> cbxEnv;
-	ComboBox<User> cbxUsers;
+	ComboBox<String> cbxUsers;
 	PasswordField passField;
 	ButtonType loginButtonType;
 	ButtonType cancelButtonType;
-	boolean envFilled;
-	boolean userFilled;
-	boolean passFilled;
+
 	
 	// METHODS
 	public LogonDialog(String windowName, String windowDesc) {		
 		Label envLabel = new Label("Środowisko:");
 		Label userLabel = new Label("Użytkownik:");
 		Label passLabel = new Label("Hasło:");
-		
-		envFilled = false;
-		userFilled = false;
-		passFilled = false;
 		
 		cbxEnv = new ChoiceBox<>(getEnvs());
 		cbxEnv.setConverter(new EnvironmentConverter());
@@ -67,21 +64,36 @@ public class LogonDialog {
 		cancelButtonType = new ButtonType("Anuluj", ButtonData.CANCEL_CLOSE);
 		dialog.getDialogPane().getButtonTypes().add(cancelButtonType);
 		dialog.getDialogPane().getButtonTypes().add(loginButtonType);
-		boolean disabled = cbxUsers.getSelectionModel().isEmpty() || cbxEnv.getSelectionModel().isEmpty() || passField.getSelectedText().isEmpty();
-		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
+		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(true);
 	}
 	
 	private void passField_Changed(String newVal) {
-		
+		passField.setText(newVal);
+		boolean userValue = cbxUsers.getValue() != null;
+		if (userValue)
+			userValue = cbxUsers.getValue().isEmpty();
+		boolean disabled = userValue || cbxEnv.getSelectionModel().isEmpty() || newVal.isEmpty();
+		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
-	private void cbxUsers_Changed(User newVal) {
-
+	private void cbxUsers_Changed(String newVal) {
+		cbxUsers.setValue(newVal);
+		boolean userValue = newVal != null;
+		if (userValue)
+			userValue = newVal.isEmpty();
+		boolean disabled = userValue || cbxEnv.getSelectionModel().isEmpty() || passField.getText().isEmpty();
+		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
 	private void cbxEnv_Changed(Environment newVal) {
 		cbxEnv.setValue(newVal);
 		cbxUsers.setItems(cbxEnv.getValue().users);
+		cbxUsers.setValue("");
+		boolean userValue = cbxUsers.getValue() != null;
+		if (userValue)
+			userValue = cbxUsers.getValue().isEmpty();
+		boolean disabled = userValue || cbxEnv.getSelectionModel().isEmpty() || passField.getText().isEmpty();
+		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
 	private ObservableList<Environment> getEnvs() {
@@ -101,17 +113,24 @@ public class LogonDialog {
 		return tmp;
 	}
 	
-	/*public Optional<Pair<Environment, String>> showAndWait() {		
+	public Optional<Pair<Environment, String>> showAndWait() {		
 		Optional<ButtonType> result = dialog.showAndWait();
 		return resultConverter(result);
 	}
 	
-	private Pair<Environment, String> resultConverter(Optional<ButtonType> result) {
-		if (result == loginButtonType) {
-			if (users.isPassCorrect(cbxEnv.getValue(), cbxUsers.getValue(), passField.getText())) {
-				return new Pair<Environment, String>(cbxEnv.getValue(),cbxUsers.getValue());
+	private Optional<Pair<Environment, String>> resultConverter(Optional<ButtonType> result) {
+		if (result.get() == loginButtonType) {
+			if (isPassCorrect(cbxEnv.getValue(), cbxUsers.getValue(), passField.getText())) {
+				return Optional.of(new Pair<Environment, String>(cbxEnv.getValue(),cbxUsers.getValue()));
 			}
 		}
-		return null;
-	}*/
+		return Optional.empty();
+	}
+
+	private boolean isPassCorrect(Environment env, String username, String password) {
+		String sourcePass = env.passwords.get(username);
+		if (sourcePass == null)
+			return false;
+		return sourcePass.equals(password);
+	}
 }
