@@ -1,3 +1,10 @@
+/**
+ * LogonDialog window based on JavaFX Dialog<> class
+ * 
+ * @author Michał Dziewulski (M.Dziewulski@stud.elka.pw.edu.pl)
+ * @version 1.0
+ */
+
 import java.util.List;
 import java.util.Optional;
 import javafx.scene.control.*;
@@ -24,7 +31,12 @@ public class LogonDialog {
 
 	
 	// METHODS
-	public LogonDialog(String windowName, String windowDesc) {		
+	/**
+	 * LogonDialog constructor
+	 * @param windowName  the string with the dialog window name, will be displayed on a bar
+	 * @param windowDesc  the string with the dialog window description, will be displayed above the main content
+	 */
+	public LogonDialog(String windowName, String windowDesc) {
 		dialog = new Dialog<>();
 		cbxEnv = new ChoiceBox<>(getEnvs());
 		cbxUsers = new ComboBox<>();
@@ -35,6 +47,11 @@ public class LogonDialog {
 		draw(windowName, windowDesc);
 	}
 	
+	/**
+	 * Drawing the content of the dialog window
+	 * @param windowName  the string with the dialog window name, will be displayed on a bar
+	 * @param windowDesc  the string with the dialog window description, will be displayed above the main content
+	 */
 	private void draw(String windowName, String windowDesc) {
 		// Labels
 		Label envLabel = new Label("Środowisko:");
@@ -59,9 +76,6 @@ public class LogonDialog {
 		
 		// Grid pane
 		GridPane grid = new GridPane();
-		/*grid.addRow(0, envLabel, cbxEnv);
-		grid.addRow(1, userLabel, cbxUsers);
-		grid.addRow(2, passLabel, passField);*/
 		
 		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);
@@ -92,6 +106,10 @@ public class LogonDialog {
 	
 	// Event handlers
 	
+	/**
+	 * Event handler for password field value change
+	 * @param newVal  new password value
+	 */
 	private void passField_Changed(String newVal) {
 		passField.setText(newVal);
 		boolean userValue = cbxUsers.getValue() != null;
@@ -101,6 +119,10 @@ public class LogonDialog {
 		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
+	/**
+	 * Event handler for username combo box value change
+	 * @param newVal  new username value
+	 */
 	private void cbxUsers_Changed(String newVal) {
 		cbxUsers.setValue(newVal);
 		boolean userValue = newVal != null;
@@ -110,6 +132,10 @@ public class LogonDialog {
 		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
+	/**
+	 * Event handler for environment choice box value change
+	 * @param newVal  new environment value
+	 */
 	private void cbxEnv_Changed(Environment newVal) {
 		cbxEnv.setValue(newVal);
 		cbxUsers.setItems(cbxEnv.getValue().users);
@@ -123,6 +149,10 @@ public class LogonDialog {
 
 	// Data generation
 	
+	/**
+	 * Generation of sample data for demo purposes
+	 * @return ObservableList of Environment object
+	 */
 	private ObservableList<Environment> getEnvs() {
 		ObservableList<Environment> tmp = FXCollections.observableArrayList();
 		Environment prodEnv = new Environment("Produkcyjne");
@@ -142,11 +172,20 @@ public class LogonDialog {
 	
 	// Logic
 	
+	/**
+	 * Custom showAndWait method for the dialog window
+	 * @return Optional pair of Environment and username String if login successful, else Optional.empty()
+	 */
 	public Optional<Pair<Environment, String>> showAndWait() {		
 		Optional<ButtonType> result = dialog.showAndWait();
 		return resultConverter(result);
 	}
 	
+	/**
+	 * Convert standard dialog.showAndWait return value to Optional Pair of Environment and String
+	 * @param result  result of dialog.showAndWait() method
+	 * @return Optional pair of Environment and username String if login successful, else Optional.empty()
+	 */
 	private Optional<Pair<Environment, String>> resultConverter(Optional<ButtonType> result) {
 		if (result.get() == loginButtonType) {
 			if (isPassCorrect(cbxEnv.getValue(), cbxUsers.getValue(), passField.getText())) {
@@ -156,6 +195,13 @@ public class LogonDialog {
 		return Optional.empty();
 	}
 
+	/**
+	 * Validate login information
+	 * @param env  Enviroment Object
+	 * @param username  username String
+	 * @param password  password String
+	 * @return boolean value, true if data is correct
+	 */
 	private boolean isPassCorrect(Environment env, String username, String password) {
 		String sourcePass = env.passwords.get(username);
 		if (sourcePass == null)

@@ -3,6 +3,11 @@ import javafx.util.Pair;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * Main class
+ * @author Michał Dziewulski (M.Dziewulski@stud.elka.pw.edu.pl)
+ * @version 1.0
+ */
 public class Main extends Application {
 
 	@Override
@@ -24,5 +29,4 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
-
 }
