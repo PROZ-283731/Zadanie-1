@@ -8,15 +8,8 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		Optional<Pair<Environment,String>> result = (new LogonDialog("Logowanie", "Logowanie do systemu STYLEman")).showAndWait();
-		
-		if (result.isPresent()) {
-			
-		}
-		
-		else {
-			
-		}
+		Optional<ButtonType> result = new LogonDialog("Logowanie", "Logowanie do systemu STYLEman").dialog.showAndWait();
+		//Optional<Pair<Environment,String>> result = (new LogonDialog("Logowanie", "Logowanie do systemu STYLEman")).showAndWait();
 	}
 	
 	@Override

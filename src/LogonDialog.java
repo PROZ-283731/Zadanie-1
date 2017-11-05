@@ -1,12 +1,11 @@
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import javafx.util.Pair;
 import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 
 public class LogonDialog {
@@ -15,36 +14,85 @@ public class LogonDialog {
 	Dialog<ButtonType> dialog;
 	List<Environment> envs;
 	ChoiceBox<Environment> cbxEnv;
-	ComboBox<String> cbxUsers;
+	ComboBox<User> cbxUsers;
 	PasswordField passField;
+	ButtonType loginButtonType;
+	ButtonType cancelButtonType;
+	boolean envFilled;
+	boolean userFilled;
+	boolean passFilled;
 	
 	// METHODS
-	public LogonDialog(String windowName, String windowDesc) {
-		Label envLabel = new Label("årodowisko:");
-		Label userLabel = new Label("Uøytkownik:");
-		Label passLabel = new Label("Has≥o:");
+	public LogonDialog(String windowName, String windowDesc) {		
+		Label envLabel = new Label("≈örodowisko:");
+		Label userLabel = new Label("U≈ºytkownik:");
+		Label passLabel = new Label("Has≈Ço:");
 		
-		cbxEnv = new ChoiceBox<>(FXCollections.observableArrayList(getEnvs()));
+		envFilled = false;
+		userFilled = false;
+		passFilled = false;
+		
+		cbxEnv = new ChoiceBox<>(getEnvs());
 		cbxEnv.setConverter(new EnvironmentConverter());
+		cbxEnv.valueProperty().addListener(
+				(observable, oldVal, newVal) -> cbxEnv_Changed(newVal)
+		);
+		
+		cbxUsers = new ComboBox<>();
+		cbxUsers.setEditable(true);
+		cbxUsers.valueProperty().addListener(
+				(observable, oldVal, newVal) -> cbxUsers_Changed(newVal)
+		);
+		
+		passField = new PasswordField();
+		passField.textProperty().addListener(
+				(observable, oldVal, newVal) -> passField_Changed(newVal)
+		);
+		
+		GridPane grid = new GridPane();
+		grid.addRow(0, envLabel, cbxEnv);
+		grid.addRow(1, userLabel, cbxUsers);
+		grid.addRow(2, passLabel, passField);
 		
 		dialog = new Dialog<>();
-		dialog.setHeaderText(windowName);
-		dialog.setContentText(windowDesc);
-		ButtonType loginButtonType = new ButtonType("Login", ButtonData.CANCEL_CLOSE);
+		dialog.setHeaderText(windowDesc);
+		dialog.setTitle(windowName);
+		dialog.getDialogPane().setContent(grid);
+		
+		Image image = new Image(ClassLoader.getSystemResourceAsStream("Login_64x.png"));
+		ImageView imageView = new ImageView(image);
+		dialog.setGraphic(imageView);
+		
+		loginButtonType = new ButtonType("Login", ButtonData.OK_DONE);
+		cancelButtonType = new ButtonType("Anuluj", ButtonData.CANCEL_CLOSE);
+		dialog.getDialogPane().getButtonTypes().add(cancelButtonType);
 		dialog.getDialogPane().getButtonTypes().add(loginButtonType);
-		boolean disabled = false; // computed based on content of text fields, for example
+		boolean disabled = cbxUsers.getSelectionModel().isEmpty() || cbxEnv.getSelectionModel().isEmpty() || passField.getSelectedText().isEmpty();
 		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 	
-	private List<Environment> getEnvs() {
-		List<Environment> tmp = new ArrayList<>();
+	private void passField_Changed(String newVal) {
+		
+	}
+
+	private void cbxUsers_Changed(User newVal) {
+
+	}
+
+	private void cbxEnv_Changed(Environment newVal) {
+		cbxEnv.setValue(newVal);
+		cbxUsers.setItems(cbxEnv.getValue().users);
+	}
+
+	private ObservableList<Environment> getEnvs() {
+		ObservableList<Environment> tmp = FXCollections.observableArrayList();
 		Environment prodEnv = new Environment("Produkcyjne");
 		Environment testEnv = new Environment("Testowe");
 		Environment devEnv = new Environment("Deweloperskie");
 		
-		prodEnv.addUser("produser1");
-		testEnv.addUser("testuser1");
-		devEnv.addUser("devuser1");
+		prodEnv.addUser("produser1", "qwerty");
+		testEnv.addUser("testuser1", "azerty");
+		devEnv.addUser("devuser1", "qazwsx");
 		
 		tmp.add(prodEnv);
 		tmp.add(testEnv);
@@ -53,17 +101,17 @@ public class LogonDialog {
 		return tmp;
 	}
 	
-	public Optional<Pair<Environment, String>> showAndWait() {		
+	/*public Optional<Pair<Environment, String>> showAndWait() {		
 		Optional<ButtonType> result = dialog.showAndWait();
 		return resultConverter(result);
 	}
 	
-	private Optional<Pair<Environment, String>> resultConverter(Optional<ButtonType> result) {
+	private Pair<Environment, String> resultConverter(Optional<ButtonType> result) {
 		if (result == loginButtonType) {
 			if (users.isPassCorrect(cbxEnv.getValue(), cbxUsers.getValue(), passField.getText())) {
-				return new Optional<Pair<Environment, String>>(cbxEnv.getValue(),cbxUsers.getValue());
+				return new Pair<Environment, String>(cbxEnv.getValue(),cbxUsers.getValue());
 			}
 		}
 		return null;
-	}
+	}*/
 }
