@@ -22,4 +22,9 @@ public class Environment {
 	public ObservableList<String> getUsers() {
 		return users;
 	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
 }

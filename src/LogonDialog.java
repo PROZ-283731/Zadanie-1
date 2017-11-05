@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.Optional;
-
 import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
@@ -9,6 +8,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 
 
 public class LogonDialog {
@@ -25,47 +25,72 @@ public class LogonDialog {
 	
 	// METHODS
 	public LogonDialog(String windowName, String windowDesc) {		
+		dialog = new Dialog<>();
+		cbxEnv = new ChoiceBox<>(getEnvs());
+		cbxUsers = new ComboBox<>();
+		passField = new PasswordField();		
+		loginButtonType = new ButtonType("Login", ButtonData.OK_DONE);
+		cancelButtonType = new ButtonType("Anuluj", ButtonData.CANCEL_CLOSE);
+		
+		draw(windowName, windowDesc);
+	}
+	
+	private void draw(String windowName, String windowDesc) {
+		// Labels
 		Label envLabel = new Label("Środowisko:");
 		Label userLabel = new Label("Użytkownik:");
 		Label passLabel = new Label("Hasło:");
 		
-		cbxEnv = new ChoiceBox<>(getEnvs());
-		cbxEnv.setConverter(new EnvironmentConverter());
+		// Choice box
 		cbxEnv.valueProperty().addListener(
 				(observable, oldVal, newVal) -> cbxEnv_Changed(newVal)
 		);
 		
-		cbxUsers = new ComboBox<>();
+		// Combo box
 		cbxUsers.setEditable(true);
 		cbxUsers.valueProperty().addListener(
 				(observable, oldVal, newVal) -> cbxUsers_Changed(newVal)
 		);
 		
-		passField = new PasswordField();
+		// Password field
 		passField.textProperty().addListener(
 				(observable, oldVal, newVal) -> passField_Changed(newVal)
 		);
 		
+		// Grid pane
 		GridPane grid = new GridPane();
-		grid.addRow(0, envLabel, cbxEnv);
+		/*grid.addRow(0, envLabel, cbxEnv);
 		grid.addRow(1, userLabel, cbxUsers);
-		grid.addRow(2, passLabel, passField);
+		grid.addRow(2, passLabel, passField);*/
 		
-		dialog = new Dialog<>();
+		grid.setAlignment(Pos.CENTER);
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.add(envLabel, 0, 0);
+		grid.add(userLabel, 0, 1);
+		grid.add(passLabel, 0, 2);
+		grid.add(cbxEnv, 1, 0);
+		grid.add(cbxUsers, 1, 1);
+		grid.add(passField, 1, 2);
+		
+		
+		// Dialog
 		dialog.setHeaderText(windowDesc);
 		dialog.setTitle(windowName);
 		dialog.getDialogPane().setContent(grid);
 		
+		// Image
 		Image image = new Image(ClassLoader.getSystemResourceAsStream("Login_64x.png"));
 		ImageView imageView = new ImageView(image);
 		dialog.setGraphic(imageView);
 		
-		loginButtonType = new ButtonType("Login", ButtonData.OK_DONE);
-		cancelButtonType = new ButtonType("Anuluj", ButtonData.CANCEL_CLOSE);
+		// Buttons
 		dialog.getDialogPane().getButtonTypes().add(cancelButtonType);
 		dialog.getDialogPane().getButtonTypes().add(loginButtonType);
 		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(true);
 	}
+	
+	// Event handlers
 	
 	private void passField_Changed(String newVal) {
 		passField.setText(newVal);
@@ -96,6 +121,8 @@ public class LogonDialog {
 		dialog.getDialogPane().lookupButton(loginButtonType).setDisable(disabled);
 	}
 
+	// Data generation
+	
 	private ObservableList<Environment> getEnvs() {
 		ObservableList<Environment> tmp = FXCollections.observableArrayList();
 		Environment prodEnv = new Environment("Produkcyjne");
@@ -112,6 +139,8 @@ public class LogonDialog {
 
 		return tmp;
 	}
+	
+	// Logic
 	
 	public Optional<Pair<Environment, String>> showAndWait() {		
 		Optional<ButtonType> result = dialog.showAndWait();
